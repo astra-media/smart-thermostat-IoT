@@ -70,10 +70,10 @@ int airConOnValue = 1900;
 
 TaskHandle_t Task1; //task1 is going to be used for the core 1
 
-
 //millis for LCD
 unsigned long previousMillis = 0;
 const long refreshInterval = 500; // time between display refresh in ms
+
 
 void setup() {
   // Defined in thingProperties.h
@@ -148,10 +148,13 @@ void loop() {
   // Your code here 
   setAirCon();
 
+
   if(millis() - previousMillis >= refreshInterval){
     previousMillis = millis();
     setLCD();
   }
+
+  delay(50);
 }
 
 /*
