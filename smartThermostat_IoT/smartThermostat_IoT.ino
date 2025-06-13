@@ -70,9 +70,13 @@ int airConOnValue = 1900;
 
 TaskHandle_t Task1; //task1 is going to be used for the core 1
 
+//millis for ArduinoCloud Temp update
+unsigned long previousMillisforTemp = 0;
+const long refreshIntervalforTemp = 1000; // time between display refresh in ms
+
 //millis for LCD
 unsigned long previousMillis = 0;
-const long refreshInterval = 500; // time between display refresh in ms
+const long refreshInterval = 450; // time between display refresh in ms
 
 
 void setup() {
@@ -135,10 +139,16 @@ void Task1code( void * pvParameters ){
 
   //The for(;;) creates an infinite loop. So, this function runs similarly to the loop() function. You can use it as a second loop in your code
   for(;;){
-    temperature = getTemp;
     getTempfromDHT();
     getAirConState();
     controlAirCon();
+
+    if(millis() - previousMillisforTemp >= refreshIntervalforTemp){
+      previousMillisforTemp = millis();
+      if(ArduinoCloud.connected() == 1){
+        temperature = getTemp;
+      }
+    }
   } 
 }
 
@@ -319,23 +329,41 @@ void setAirCon () {
   if (tempUpButtonState == HIGH){
     if(setTemp >= 104){
       setTemp = 104;
+      setLCD();
+      if(ArduinoCloud.connected() == 1){
+        thermostat = setTemp;
+      }
+
     }else {
       setTemp ++;
+      setLCD();
+      if(ArduinoCloud.connected() == 1){
+        thermostat = setTemp;
+      }
     }
-    thermostat = setTemp;
-    delay(500);
+    delay(450);
   } else if (tempDownButtonState == HIGH){
     if(setTemp <= 68){
       setTemp = 68;
+      setLCD();
+      if (ArduinoCloud.connected() == 1) {
+        thermostat = setTemp;
+      }
     }else {
       setTemp --;
+      setLCD();
+      if (ArduinoCloud.connected() == 1) {
+        thermostat = setTemp;
+      }
     }
-    thermostat = setTemp;
-    delay(500);
+    delay(450);
   } else if (acButtonState == HIGH){
     airConSwitch = !airConSwitch;
-    airCon = airConSwitch;
-    delay(500);
+    setLCD();
+    if (ArduinoCloud.connected() == 1) {
+      airCon = airConSwitch;
+    }
+    delay(450);
   }
 }
 
