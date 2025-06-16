@@ -58,9 +58,9 @@ DHT dht(DHTPIN, DHTTYPE);
 
 #define LED_PIN 2
 
-bool airConSwitch = false;
+bool airConSwitch = true;
 
-int setTemp = 0;
+int setTemp = 84;
 
 int getTemp = 60;
 
@@ -114,8 +114,6 @@ void setup() {
   irsend.begin();
 
   lcd.begin(16, 2);
-  
-  setTemp = 82;
 
   /*create a task that will be executed in the Task1code() function, with priority 1 and executed on core 1
   (Priority values start at 0, in which 0 is the lowest priority. The processor will run the tasks with higher priority first)
@@ -144,6 +142,7 @@ void Task1code( void * pvParameters ){
     controlAirCon();
 
     if(millis() - previousMillisforTemp >= refreshIntervalforTemp){
+      ArduinoCloud.update();
       previousMillisforTemp = millis();
       if(ArduinoCloud.connected() == 1){
         temperature = getTemp;
@@ -154,10 +153,8 @@ void Task1code( void * pvParameters ){
 
 //Arduino sketches run on core 1 by default. So, you could write the code for Task2 in the loop() (there is no need to create another task)
 void loop() {
-  ArduinoCloud.update();
   // Your code here 
   setAirCon();
-
 
   if(millis() - previousMillis >= refreshInterval){
     previousMillis = millis();
@@ -175,7 +172,7 @@ void onAirConChange()  {
   // Add your code here to act upon AirCon change
     if(airCon){
       airConSwitch = true;
-    } else if (!airCon){
+    } else if (ArduinoCloud.connected() == 1 && !airCon){
       airConSwitch = false;
     }
   Serial.println(airCon);
