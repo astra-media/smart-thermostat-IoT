@@ -70,10 +70,6 @@ int airConOnValue = 1900;
 
 TaskHandle_t Task1; //task1 is going to be used for the core 1
 
-//millis for ArduinoCloud Temp update
-unsigned long previousMillisforTemp = 0;
-const long refreshIntervalforTemp = 1000; // time between display refresh in ms
-
 //millis for LCD
 unsigned long previousMillis = 0;
 const long refreshInterval = 450; // time between display refresh in ms
@@ -137,16 +133,13 @@ void Task1code( void * pvParameters ){
 
   //The for(;;) creates an infinite loop. So, this function runs similarly to the loop() function. You can use it as a second loop in your code
   for(;;){
+    ArduinoCloud.update();
     getTempfromDHT();
     getAirConState();
     controlAirCon();
 
-    if(millis() - previousMillisforTemp >= refreshIntervalforTemp){
-      ArduinoCloud.update();
-      previousMillisforTemp = millis();
-      if(ArduinoCloud.connected() == 1){
-        temperature = getTemp;
-      }
+    if(ArduinoCloud.connected() == 1){
+      temperature = getTemp;
     }
   } 
 }
